@@ -1,5 +1,4 @@
 module Syntax
-
 extend lang::std::Layout;
 extend lang::std::Id;
 
@@ -8,29 +7,48 @@ extend lang::std::Id;
  */
 
 start syntax Form 
-  = "form" Id "{" Question* "}"; 
+  = @foldable "form" Id Block; 
 
-// TODO: question, computed question, block, if-then-else, if-then
+syntax Block
+  = @foldable bracket "{" Question* "}";
+
 syntax Question
-  = 
+  = Str Id ":" Type "=" Expr
+  | Str Id ":" Type
+  | Conditional
   ; 
 
-// TODO: +, -, *, /, &&, ||, !, >, <, <=, >=, ==, !=, literals (bool, int, str)
-// Think about disambiguation using priorities and associativity
-// and use C/Java style precedence rules (look it up on the internet)
+syntax Conditional = "if" "(" Expr ")" Block ("else" Block)?; 
+
 syntax Expr 
   = Id \ "true" \ "false" // true/false are reserved keywords.
+  | Int
+  | Bool
+  | Str
+  > "-" Expr
+  > "!" Expr
+  | bracket "(" Expr ")"
+  > left
+    ( Expr "*" Expr
+    | Expr "/" Expr )
+  > left ( Expr "+" Expr | Expr "-" Expr )
+  > non-assoc
+    ( Expr "\<" Expr
+    | Expr "\<=" Expr
+    | Expr "\>" Expr
+    | Expr "\>=" Expr )
+  > non-assoc 
+    ( Expr "==" Expr
+    | Expr "!=" Expr )
+  > left Expr "&&" Expr
+  > left Expr "||" Expr
   ;
   
 syntax Type
-  = ;  
+  = "integer"
+  | "boolean"
+  | "string";  
   
-lexical Str = ;
-
-lexical Int 
-  = ;
-
-lexical Bool = ;
-
-
-
+lexical Str = "\"" ![\"]* "\"" ;
+lexical Int = [0-9]+ ;
+lexical Bool = "true" | "false" ;
