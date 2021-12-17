@@ -13,14 +13,10 @@ data AForm(loc src = |tmp:///|)
 
 data AQuestion(loc src = |tmp:///|)
   = computedQuest(str name, str id, AType, AExpr)
-  | quest(str name, AId, AType)
-  | conditional(AConditional cond)
-  ; 
-
-data AConditional(loc src = |tmp:///|)
-  = ifThen(AExpr guard, list[AQuestion] questions)
+  | quest(str name, str id, AType)
+  | ifThen(AExpr guard, list[AQuestion] questions)
   | ifThenElse(AExpr guard, list[AQuestion] ifQuest, list[AQuestion] elseQuest)
-;
+  ; 
 
 data AExpr(loc src = |tmp:///|)
   = ref(AId id)
@@ -48,3 +44,9 @@ data AId(loc src = |tmp:///|)
 
 data AType(loc src = |tmp:///|)
   = qlType(str t);
+
+data AInt(loc src = |tmp:///|)
+  = aInt(str t);
+
+data ABool(loc src = |tmp:///|)
+  = aBool(str t);
