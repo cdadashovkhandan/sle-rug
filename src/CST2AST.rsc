@@ -5,6 +5,8 @@ import AST;
 
 import ParseTree;
 import String;
+import IO;
+import Type;
 
 /*
  * Implement a mapping from concrete syntax trees (CSTs) to abstract syntax trees (ASTs)
@@ -54,7 +56,7 @@ AExpr cst2ast(Expr expr) {
     case (Expr)`<Expr a> \<= <Expr b>`: return leq(cst2ast(a), cst2ast(b), src=expr@\loc);
     case (Expr)`<Expr a> \> <Expr b>`: return gt(cst2ast(a), cst2ast(b), src=expr@\loc);
     case (Expr)`<Expr a> \>= <Expr b>`: return geq(cst2ast(a), cst2ast(b), src=expr@\loc);
-    case (Expr)`<Expr a> == <Expr b>`: return eq(cst2ast(a), cst2ast(b), src=expr@\loc);
+    case (Expr)`<Expr a> == <Expr b>`: return equ(cst2ast(a), cst2ast(b), src=expr@\loc);
     case (Expr)`<Expr a> != <Expr b>`: return neq(cst2ast(a), cst2ast(b), src=expr@\loc);
     case (Expr)`<Expr a> && <Expr b>`: return and(cst2ast(a), cst2ast(b), src=expr@\loc);
     case (Expr)`<Expr a> || <Expr b>`: return or(cst2ast(a), cst2ast(b), src=expr@\loc);
@@ -71,4 +73,4 @@ int cst2ast(Int i) = toInt("<i>");
 bool cst2ast((Bool)`true`) = true;
 bool cst2ast((Bool)`false`) = false;
 
-str cst2ast(Str s) = s;
+str cst2ast(Str s) = "<s>";

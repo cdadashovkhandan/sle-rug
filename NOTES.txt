@@ -1,0 +1,1 @@
+it assigns default values but doesn't do any evaluations
