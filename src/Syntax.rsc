@@ -13,8 +13,8 @@ syntax Block
   = @foldable bracket "{" Question* "}";
 
 syntax Question
-  = Str Id ":" Type "=" Expr
-  | Str Id ":" Type
+  = Str Id ":" Type
+  | Str Id ":" Type "=" Expr
   | Conditional
   ; 
 
@@ -44,7 +44,7 @@ syntax Expr
   > left Expr "||" Expr
   ;
   
-syntax Type
+lexical Type
   = "integer"
   | "boolean"
   | "string";  

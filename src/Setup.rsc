@@ -15,26 +15,27 @@ set[Message] run_messages(loc src) {
     return check(ast, collect(ast), resolve(ast)[2]);
 }
 
-VEnv run_input(loc src, str qId, int val) {
+AForm new_ast(loc src) {
     pt = parse(#Form, src);
-    f = cst2ast(pt);
-	VEnv venv = initialEnv(ast);
-	Input inp = input(qId, vInt(val));
-	return eval(f, inp, venv);
+    ast = cst2ast(pt);
+	return ast;
 }
 
-VEnv run_input(loc src, str qId, bool val) {
-    pt = parse(#Form, src);
-    f = cst2ast(pt);
-	VEnv venv = initialEnv(f);
-	Input inp = input(qId, vBool(val));
-	return eval(f, inp, venv);
+VEnv new_env(AForm ast) {
+	return initialEnv(ast);
 }
 
-VEnv run_input(loc src, str qId, str val) {
-    pt = parse(#Form, src);
-    f = cst2ast(pt);
-	VEnv venv = initialEnv(f);
-	Input inp = input(qId, vStr(val));
-	return eval(f, inp, venv);
+VEnv new_inp(VEnv src, AForm ast, str qId, Value val) {
+	Input inp = input(qId, val);
+	return eval(ast, inp, src);
 }
+	
+VEnv new_inp(VEnv src, AForm ast, str qId, int val) 
+	= new_inp(src, ast, qId, vInt(val));
+	
+VEnv new_inp(VEnv src, AForm ast, str qId, bool val) 
+	= new_inp(src, ast, qId, vBool(val));
+	
+VEnv new_inp(VEnv src, AForm ast, str qId, str val) 
+	= new_inp(src, ast, qId, vStr(val));
+
