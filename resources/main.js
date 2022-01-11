@@ -28,6 +28,17 @@ $('#formName').on('formUpdated', function (event) {
     $('#compInteger')[0].value = $('#integer')[0].valueAsNumber + 1;
 })
 
+
+$('#formName').on('formUpdated', function (event) {
+    let expr = $('#integer')[0].valueAsNumber + 1;
+
+    if (expr) {
+        $('#src:///bullshit').addClass('true');
+    } else {
+        $('#src:///bullshit').removeClass('true');
+    }
+})
+
 //  "$('#<q.id>')[0].value"
 
 

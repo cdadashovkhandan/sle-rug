@@ -97,5 +97,76 @@ HTML5Node makeComputedQuest(AQuestion cq) {
 
 
 str form2js(AForm f) {
-    return "";
+    js_str = "";
+    for (AQuestion q in f) {
+        js_str += quest2js(q, f);
+    }
+    return js_str;
+}
+
+str quest2js(AQuestion f, AForm f) {
+    switch (q) {
+        computedQuest(_,id,ty,expr): {
+            str accessor = typeAccessor(ty);
+            return  "$('#<f.name>').on('formUpdated', function (event) {
+                    '   $('#<id>')[0].<accessor> = <expr2js(expr, f)>;
+                    '})";
+        }
+        quest(_,id,ty): {
+            str accessor = typeAccessor(ty);
+            return  "$('#<id>').on('change', function (event) {
+                    '   $('#<f.name>').trigger('formUpdated');
+                    '})";
+        }
+        ifThen(guard,whenif): {
+            str output = "";
+            
+        }
+        ifThenElse(_,_,_):
+    }
+}
+
+str expr2js(AExpr e, AForm f) {
+    switch (e) {
+        case ref(id(name, src = loc u)): {
+            AType ty = getType(name, f);
+            str accessor = typeAccessor(ty);
+            return "$('#<name>')[0].<accessor>";
+        }
+        case litInt(val): return "<val>";
+        case litBool(val): return "<val>";
+        case litStr(val): return "<val>";
+        case neg(expr): return "-<expr2js(expr, f)>";
+        case not(expr): return "!<expr2js(expr, f)>";
+        case mul(lhs, rhs): return "<expr2js(lhs, f)> * <expr2js(rhs, f)>";
+        case div(lhs, rhs): return "<expr2js(lhs, f)> / <expr2js(rhs, f)>";
+        case plus(lhs, rhs): return "<expr2js(lhs, f)> + <expr2js(rhs, f)>";
+        case min(lhs, rhs): return "<expr2js(lhs, f)> - <expr2js(rhs, f)>";
+        case and(lhs, rhs): return "<expr2js(lhs, f)> && <expr2js(rhs, f)>";
+        case or(lhs, rhs): return "<expr2js(lhs, f)> || <expr2js(rhs, f)>";
+        case lt(lhs, rhs): return "<expr2js(lhs, f)> \< <expr2js(rhs, f)>";
+        case leq(lhs, rhs): return "<expr2js(lhs, f)> \<= <expr2js(rhs, f)>";
+        case gt(lhs, rhs): return "<expr2js(lhs, f)> > <expr2js(rhs, f)>";
+        case geq(lhs, rhs): return "<expr2js(lhs, f)> >= <expr2js(rhs, f)>";
+        case equ(lhs, rhs): return "<expr2js(lhs, f)> === <expr2js(rhs, f)>";
+        case neq(lhs, rhs): return "<expr2js(lhs, f)> !== <expr2js(rhs, f)>";
+    }
+}
+
+str typeAccessor(AType ty) {
+    switch (ty.t) {
+        case "integer": return "valueAsNumber";
+        case "boolean": return "value";
+        case "string":  return "checked";
+    }
+}
+
+str getType(str id, AForm form) {
+    for (/AQuestion q <- f) {
+        switch (q) {
+            computedQuest(_,id2,ty,_): if (id == id2) { return ty; }
+            quest(_,id2,ty): if (id == id2) { return ty; }
+        }
+    }
+    return "string";
 }
