@@ -5,7 +5,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <script src="scripts/.something.js" defer></script>
+    <link rel="stylesheet" href="main.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 </head>
 <body>
     <!-- 
@@ -14,47 +15,58 @@
     -->
     <form id="formName">
         <!-- String -->
-        <label for="identifier">Label</label>
+        <div class="ql-question-wrapper">
+        <label for="string">String</label>
         <input 
             type="text"
-            id="identifier"
+            id="string"
             name="questionLabel"
             class="ql-enabled">
+        </div>
         
         <!-- Integer -->
-        <label for="identifier">Label</label>
+        <div class="ql-question-wrapper">
+        <label for="integer">Integer</label>
         <input 
             type="number"
-            id="identifier"
+            id="integer"
             name="questionLabel"
             class="ql-enabled">
+        </div>
         
         <!-- Boolean -->
-        <label for="identifier">Label</label>
+        <div class="ql-question-wrapper">
+        <label for="boolean">Boolean</label>
         <input 
             type="checkbox"
-            id="identifier"
+            id="boolean"
             name="questionLabel"
             class="ql-enabled">
+        </div>
 
         <!-- Computed Integer -->
-        <label for="identifier">Label</label>
+        <div class="ql-question-wrapper">
+        <label for="compInteger">Computed Integer</label>
         <input 
-            type="number"
-            id="identifier"
+            type="text"
+            id="compInteger"
             name="questionLabel"
             readonly="readonly"
             class="ql-enabled ql-computed">
+        </div>
         
         <!-- Computed Boolean -->
-        <label for="identifier">Label</label>
+        <div class="ql-question-wrapper">
+        <label for="compBoolean">Computed Boolean</label>
         <input 
             type="checkbox"
-            id="identifier"
+            id="compBoolean"
             name="questionLabel"
             readonly="readonly"
             class="ql-enabled ql-computed"
             onclick="return false;">
+        </div>
     </form>
+    <script src="main.js"></script>
 </body>
 </html>

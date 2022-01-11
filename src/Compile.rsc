@@ -53,16 +53,19 @@ HTML5Node makeQuest(AQuestion q) {
     switch(q.\type) {
       case qlType("integer"):
         return div(
+            class("ql-question-wrapper"),
             label(\for(q.id), q.name),
             input(\type("integer"), id(q.id), name(q.name))
         );
       case qlType("boolean"):
         return div(
+            class("ql-question-wrapper"),
             label(\for(q.id), q.name),
             input(\type("checkbox"), id(q.id), name(q.name))
         );
       default:
         return div(
+            class("ql-question-wrapper"),
             label(\for(q.id), q.name),
             input(\type("text"), id(q.id), name(q.name))
         );
