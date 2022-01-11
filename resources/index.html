@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="scripts/.something.js" defer></script>
+</head>
+<body>
+    <!-- 
+    * - map booleans to checkboxes, strings to textfields, ints to numeric text fields
+    * - be sure to generate uneditable widgets for computed questions! 
+    -->
+    <form id="formName">
+        <!-- String -->
+        <label for="identifier">Label</label>
+        <input 
+            type="text"
+            id="identifier"
+            name="questionLabel"
+            class="ql-enabled">
+        
+        <!-- Integer -->
+        <label for="identifier">Label</label>
+        <input 
+            type="number"
+            id="identifier"
+            name="questionLabel"
+            class="ql-enabled">
+        
+        <!-- Boolean -->
+        <label for="identifier">Label</label>
+        <input 
+            type="checkbox"
+            id="identifier"
+            name="questionLabel"
+            class="ql-enabled">
+
+        <!-- Computed Integer -->
+        <label for="identifier">Label</label>
+        <input 
+            type="number"
+            id="identifier"
+            name="questionLabel"
+            readonly="readonly"
+            class="ql-enabled ql-computed">
+        
+        <!-- Computed Boolean -->
+        <label for="identifier">Label</label>
+        <input 
+            type="checkbox"
+            id="identifier"
+            name="questionLabel"
+            readonly="readonly"
+            class="ql-enabled ql-computed"
+            onclick="return false;">
+    </form>
+</body>
+</html>
