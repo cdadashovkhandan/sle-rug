@@ -49,6 +49,17 @@ HTML5Node form2html(AForm f) {
         );
 }
 
+HTML5Node makeQuestsFromList(list[Aquestion] qs) {
+    for (/AQuestion q <- q) { //TODO: is this right?
+        switch (q) {
+            case quest(_,_,_):
+                questions += makeQuest(q);
+            case computedQuest(_,_,_,_):
+                questions += makeComputedQuest(q);
+        }
+    }
+}
+
 HTML5Node makeQuest(AQuestion q) {
     switch(q.\type) {
       case qlType("integer"):
@@ -92,6 +103,36 @@ HTML5Node makeComputedQuest(AQuestion cq) {
     }
 }
 
+//IF THEN ELSE BUILDER, I'M SORRY MIGUEL
+HTML5Node makeIfElse(AQuestion q) {
+    switch(q) {
+      case ifThen(g, qs):
+        return div(
+            id(g.src)
+            class("ql-if-else")
+            div(
+                class("ql-if"),
+                makeQuestsFromList(qs)
+            )
+            div(class(ql-else))
+        );
+      case ifThenElse(g, iqs, eqs):
+        return div(
+            id(g.src)
+            class("ql-if-else")
+            div(
+                class("ql-if"),
+                makeQuestsFromList(iqqs)
+            )
+            div(
+                class("ql-else"),
+                makeQuestsFromList(eqs)
+            )
+        );
+    }
+}
+
+// NOTE: THIS CAN BE REMOVED
 //  HTML5Node htmlQuestion(AQuestion q, bool computed) {
 //    return input(type("text"), id("<q.\type>"), name("<q.label>"), class("ql-enabled"))
 
@@ -118,11 +159,37 @@ str quest2js(AQuestion f, AForm f) {
                     '   $('#<f.name>').trigger('formUpdated');
                     '})";
         }
-        ifThen(guard,whenif): {
-            str output = "";
-            
+        ifThen(guard,iqs): {
+            source = guard.src //god I dohn't fucking rknow I think it' right?
+            output = "$('#<f.name>').on('formUpdated', function (event) {
+                    '   if (<expr2js(guard, f)>) {
+                    '       $('<source>').addClass('true');
+                    '   }
+                    '})";
+            // build js code for every question inside the if
+            for (/AQuestion iq <- iqs) {
+                output + "
+                '" + quest2js(iq) // holy fuck this is hideous
+                // but a newline between each q wouldn't hurt right?
+            }
+            return output
         }
-        ifThenElse(_,_,_):
+        ifThenElse(guard,iqs,eqs):
+            source = guard.src //god I dohn't fucking rknow I think it' right?
+            output = "$('#<f.name>').on('formUpdated', function (event) {
+                    '   if (<expr2js(guard, f)>) {
+                    '       $('<source>').addClass('true');
+                    '   } else {
+                    '       $('<source>').removeClass('true');
+                    '   }
+                    '})";
+            // build js code for every question inside the if AND the else
+            // I don't think their location matters anyway
+            for (/AQuestion iq <- iqs + eqs) { // concat the two lists
+                output + "
+                '" + quest2js(iq) // holy fuck this is hideous
+                // but a newline between each q wouldn't hurt right?
+            }
     }
 }
 
