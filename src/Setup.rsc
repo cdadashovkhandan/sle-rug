@@ -8,6 +8,7 @@ import Check;
 import Eval;
 import ParseTree;
 import IDE;
+import Compile;
 
 set[Message] run_messages(loc src) {
     pt = parse(#Form, src);
@@ -19,6 +20,11 @@ AForm new_ast(loc src) {
     pt = parse(#Form, src);
     ast = cst2ast(pt);
 	return ast;
+}
+
+void CompileFromProject(loc src) {
+	ast = new_ast(src);
+	compile(ast);
 }
 
 VEnv new_env(AForm ast) {
