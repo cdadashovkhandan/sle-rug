@@ -8,7 +8,9 @@ import Check;
 import Eval;
 import ParseTree;
 import IDE;
+import IO;
 import Compile;
+import Transform;
 
 set[Message] run_messages(loc src) {
     pt = parse(#Form, src);
@@ -22,9 +24,28 @@ AForm new_ast(loc src) {
 	return ast;
 }
 
+AForm normie_ast(loc src) {
+    pt = parse(#Form, src);
+    ast = cst2ast(pt);
+	return flatten(ast);
+}
+
 void CompileFromProject(loc src) {
 	ast = new_ast(src);
 	compile(ast);
+}
+
+AForm testRename(loc src) {
+    pt = parse(#Form, src);
+    ast = cst2ast(pt);
+	RefGraph refs = resolve(ast);
+	UseDef useDef = refs<2>;
+	loc place = [use | <loc use, loc def> <- useDef][0];
+	//|project://QL/examples/tax.myql|(133,50,<8,2>,<9,25>)
+	println("USE_DEF: <useDef>");
+	println("PLACE: <place>");
+	pt = rename(pt, place, "replace", useDef);
+	return cst2ast(pt);
 }
 
 VEnv new_env(AForm ast) {
