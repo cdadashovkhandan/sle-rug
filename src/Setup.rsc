@@ -36,16 +36,12 @@ void CompileFromProject(loc src) {
 }
 
 AForm testRename(loc src) {
-    pt = parse(#Form, src);
+    start[Form] pt = parse(#start[Form], src);
     ast = cst2ast(pt);
 	RefGraph refs = resolve(ast);
 	UseDef useDef = refs<2>;
 	loc place = [use | <loc use, loc def> <- useDef][0];
-	//|project://QL/examples/tax.myql|(133,50,<8,2>,<9,25>)
-	println("USE_DEF: <useDef>");
-	println("PLACE: <place>");
-	pt = rename(pt, place, "replace", useDef);
-	return cst2ast(pt);
+	return cst2ast(rename(pt, place, "replace", useDef));
 }
 
 VEnv new_env(AForm ast) {

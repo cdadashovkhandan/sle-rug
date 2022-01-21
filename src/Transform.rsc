@@ -4,6 +4,7 @@ import Syntax;
 import Resolve;
 import AST;
 import IO;
+import ParseTree;
 
 /* 
  * Transforming QL forms
@@ -89,6 +90,6 @@ start[Form] rename(start[Form] f, loc useOrDef, str newName, UseDef useDef) {
     println("Lucaras");
     return visit (f) {
         case Id x => [Id]newName
-            when x@src in toRename
+            when x@\loc in toRename
     }
 }

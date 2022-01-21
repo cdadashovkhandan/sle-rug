@@ -1,0 +1,18 @@
+form MyOwnFile  {
+    "Do you want blackjack?"
+        blackjack: boolean
+    
+    "Do you want hookers?"
+        hookers: boolean
+    
+    if (hookers) {
+        "How pricy?"
+            hookerPrice: integer
+        
+        "How much have you got right now?"
+            lifeSavings: integer
+
+        "Your total"
+            helloPoverty: integer = lifeSavings - hookerPrice
+    }
+}
