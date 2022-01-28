@@ -3,7 +3,6 @@ module Transform
 import Syntax;
 import Resolve;
 import AST;
-import IO;
 import ParseTree;
 
 /* 
@@ -29,11 +28,8 @@ import ParseTree;
  * Write a transformation that performs this flattening transformation.
  *
  */
- 
- /*
-  Recursively traverse the AST while keeping track if if-depth.
- */
- 
+
+// Normalize the form's conditionals
 AForm flatten(AForm f) {
     qs = [];
     for (AQuestion q <- f.questions) {
@@ -43,6 +39,8 @@ AForm flatten(AForm f) {
     return f;
 }
 
+
+//  Recursively traverse the AST while keeping track of if-depth.
 list[AQuestion] flat(AQuestion q, AExpr guac, list[AQuestion] qs) {
     switch (q) {
         case quest(_,_,_):
@@ -68,7 +66,6 @@ list[AQuestion] flat(AQuestion q, AExpr guac, list[AQuestion] qs) {
 
 start[Form] rename(start[Form] f, loc useOrDef, str newName, UseDef useDef) {
     set[loc] toRename = {};
-    println("Hey");
 
     if (useOrDef in useDef<1>) { // Def
         // Add given location
@@ -86,8 +83,7 @@ start[Form] rename(start[Form] f, loc useOrDef, str newName, UseDef useDef) {
     } else {
         return f;
     }
-
-    println("Lucaras");
+    
     return visit (f) {
         case Id x => [Id]newName
             when x@\loc in toRename

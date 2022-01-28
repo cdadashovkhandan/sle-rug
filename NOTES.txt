@@ -1,1 +1,2 @@
-FIX Js links in HTML
+TODO: 
+- Handle precedence properly in JS

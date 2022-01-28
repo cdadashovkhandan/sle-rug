@@ -10,7 +10,6 @@ import Resolve;
  
 // NB: Eval may assume the form is type- and name-correct.
 
-
 // Semantic domain for expressions (values)
 data Value
     = vInt(int n)
@@ -19,14 +18,14 @@ data Value
     ;
 
 // The value environment
-alias VEnv = map[str name, Value \value];
+alias VEnv
+    = map[str name, Value \value];
 
 // Modeling user input
 data Input
     = input(str question, Value \value);
     
-// produce an environment which for each question has a default value
-// (e.g. 0 for int, "" for str etc.)
+// Gets the default value for a given type
 Value getDefault(AType t) {
     switch (t) {
         case qlType("integer"): return vInt(0);
@@ -36,6 +35,7 @@ Value getDefault(AType t) {
     }
 }
 
+// Populate the environment with default values
 VEnv initialEnv(AForm f) {
     venv = ();
     for (/quest(_,id,t) <- f) {
@@ -47,52 +47,26 @@ VEnv initialEnv(AForm f) {
     return venv;
 }
 
-// Because of out-of-order use and declaration of questions
-// we use the solve primitive in Rascal to find the fixpoint of venv.
-VEnv eval(AForm f, Input inp, VEnv venv) {
-    println("Solving");
-    return solve (venv) {
-        venv = evalOnce(f, inp, venv);
-    }
-}
-
-VEnv evalOnce(AForm f, Input inp, VEnv venv) {
-    println("Not even once");
-    for (/AQuestion q <- f) {
-        //println("Question: <q.id>:<q.\type>");
-        venv += eval(q, inp, venv);
-    }
-    return venv;
-}
-
-bool eqTypes(Value lhs, Value rhs) {
-    if (vInt(_) := lhs && vInt(_) := rhs) return true;
-    if (vBool(_) := lhs && vBool(_) := rhs) return true;
-    if (vStr(_) := lhs && vStr(_) := rhs) return true;
-    return false;
-}
-
-VEnv eval(AQuestion q, Input inp:input(inId, inVal), VEnv venv) {
-    // evaluate conditions for branching,
-    // evaluate inp and computed questions to return updated VEnv
-
+// Evaluate questions
+VEnv eval(AQuestion q, Input inp: input(input_id, input_value), VEnv venv) {
     switch (q) {
 
         // Evaluating questions
-        case quest(_,id,t): {
-            if (id == inId) {
-                if (!eqTypes(getDefault(t), inVal)) {
+        case quest(_, id, t): {
+            if (id == input_id) {
+                // Value is not the type of question
+                if (!eqTypes(getDefault(t), input_value)) {
                     throw "Type mismatch at: <q>";
                 }
-                venv += ( inId : inVal );
+                venv += (input_id : input_value);
             }
         }
 
         // Evaluating computed questions
-        case computedQuest(_,id,_,qexpr):
+        case computedQuest(_, id, _, qexpr):
             venv += (id : eval(qexpr, venv)); 
         
-        
+        // Evaluate conditionals
         case ifThen(guard, qList): {
             vGuard = eval(guard, venv).b;
             if (vGuard) {
@@ -102,6 +76,7 @@ VEnv eval(AQuestion q, Input inp:input(inId, inVal), VEnv venv) {
             }
         }
 
+        // Ditto
         case ifThenElse(guard, thenQs, elseQs): {
             vGuard = eval(guard, venv).b;
             if (vGuard) {
@@ -118,6 +93,7 @@ VEnv eval(AQuestion q, Input inp:input(inId, inVal), VEnv venv) {
     return venv; 
 }
 
+// Evaluate expressions
 Value eval(AExpr e, VEnv venv) {
     switch (e) {
         case ref(id(str x)): return venv[x];
@@ -173,12 +149,12 @@ Value eval(AExpr e, VEnv venv) {
             rVal = eval(rhs, venv).n;
             return vBool(lVal >= rVal);
         }
-        case equ(lhs, rhs) : {
+        case equ(lhs, rhs) :
             return vBool(eval(lhs, venv) == eval(rhs, venv));
-        }
-        case neq(lhs, rhs) : {
+            
+        case neq(lhs, rhs) :
             return vBool(eval(lhs, venv) != eval(rhs, venv));
-        }
+
         case and(lhs, rhs) : {
             lVal = eval(lhs, venv).b;
             rVal = eval(rhs, venv).b;
@@ -190,6 +166,31 @@ Value eval(AExpr e, VEnv venv) {
             return vBool(lVal || rVal);
         }
 
+        // No matches
         default: throw "Invalid expression <e>";
+    }
+}
+
+// Makes one pass through the form, updating values
+VEnv evalOnce(AForm f, Input inp, VEnv venv) {
+    for (/AQuestion q <- f) {
+        venv += eval(q, inp, venv);
+    }
+    return venv;
+}
+
+// Checks if two values are of the same type
+bool eqTypes(Value lhs, Value rhs) {
+    if (vInt(_) := lhs && vInt(_) := rhs) return true;
+    if (vBool(_) := lhs && vBool(_) := rhs) return true;
+    if (vStr(_) := lhs && vStr(_) := rhs) return true;
+    return false;
+}
+
+// Because of out-of-order use and declaration of questions
+// we use the solve primitive in Rascal to find the fixpoint of venv.
+VEnv eval(AForm f, Input inp, VEnv venv) {
+    return solve (venv) {
+        venv = evalOnce(f, inp, venv);
     }
 }

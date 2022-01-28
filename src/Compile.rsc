@@ -34,14 +34,14 @@ HTML5Node form2html(AForm f) {
             head(
                 title("something"),
                 script(src("https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js")),
-                link(\rel("stylesheet"), href("main.css"))
+                link(\rel("stylesheet"), href("./main.css"))
             ),
             body(
                 form(
                     id(f.name),
                     kidsToString(questions)
                 ),
-                script(src(f.src[extension="js"].path))
+                script(src("./<f.src[extension="js"].file>"))
             )
         );
 }
@@ -114,7 +114,6 @@ HTML5Node makeComputedQuest(AQuestion cq) {
     }
 }
 
-//IF THEN ELSE BUILDER, I'M SORRY MIGUEL
 HTML5Node makeIfElse(AQuestion q) {
     switch(q) {
       case ifThen(_, qs):

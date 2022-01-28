@@ -7,10 +7,12 @@ module AST
  * - make sure there is an almost one-to-one correspondence with the grammar
  */
 
+// Top level node
 data AForm(loc src = |tmp:///|)
   = form(str name, list[AQuestion] questions)
   ; 
 
+// Question + conditionals
 data AQuestion(loc src = |tmp:///|)
   = computedQuest(str name, str id, AType \type, AExpr)
   | quest(str name, str id, AType \type)
@@ -18,6 +20,7 @@ data AQuestion(loc src = |tmp:///|)
   | ifThenElse(AExpr guard, list[AQuestion] ifQuest, list[AQuestion] elseQuest)
   ; 
 
+// Expressions
 data AExpr(loc src = |tmp:///|)
   = ref(AId id)
   | litInt(int i)
@@ -39,8 +42,11 @@ data AExpr(loc src = |tmp:///|)
   | or(AExpr a, AExpr b)
   ;
 
+// Identifier
 data AId(loc src = |tmp:///|)
   = id(str name);
+
+// Data types and the type itself:
 
 data AType(loc src = |tmp:///|)
   = qlType(str t);

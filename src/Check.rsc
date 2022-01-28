@@ -6,11 +6,11 @@ import Message; // see standard library
 import IO;
 
 data Type
-  = tint()
-  | tbool()
-  | tstr()
-  | tunknown()
-  ;
+    = tint()
+    | tbool()
+    | tstr()
+    | tunknown()
+    ;
 
 // the type environment consisting of defined questions in the form 
 alias TEnv = rel[loc def, str id, str label, Type \type];
@@ -18,141 +18,125 @@ alias TEnv = rel[loc def, str id, str label, Type \type];
 // To avoid recursively traversing the form, use the `visit` construct
 // or deep match (e.g., `for (/question(...) := f) {...}` ) 
 TEnv collect(AForm f) {
-  TEnv envs = {};
-  envs += { <q.src, id, name, typeOf(\type) > | /q:computedQuest(name, id, \type, _) <- f };
-  envs += { <q.src, id, name, typeOf(\type) > | /q:quest(name, id, \type) <- f };
-  return envs;
+    TEnv envs = {};
+    envs += { <q.src, id, name, getType(\type) > | /q:computedQuest(name, id, \type, _) <- f };
+    envs += { <q.src, id, name, getType(\type) > | /q:quest(name, id, \type) <- f };
+    return envs;
 }
 
+// Error-check the whole form
 set[Message] check(AForm f, TEnv tenv, UseDef useDef) {
-  set[Message] msgs = {};
-  msgs += { *check(q, tenv, useDef) | /AQuestion q <- f };
-  msgs += { *check(expr, tenv, useDef) | /AExpr expr <- f };
-  return msgs; 
+    set[Message] msgs = {};
+    msgs += { *check(q, tenv, useDef) | /AQuestion q <- f };
+    msgs += { *check(expr, tenv, useDef) | /AExpr expr <- f };
+    return msgs; 
 }
 
-// [X] produce an error if there are declared questions with the same name but different types.
-// [X] duplicate labels should trigger a warning 
-// [X] the declared type computed questions should match the type of the expression.
-
+// Error-heck a question
 set[Message] check(AQuestion q, TEnv tenv, UseDef useDef) {
-  set[Message] messages = {};
+    set[Message] messages = {};
 
-  if (computedQuest(qid,qname,qtype,_) := q || quest(qid,qname,qtype) := q) {
-    qsrc = q.src;
+    if (computedQuest(qid,qname,qtype,_) := q
+    ||  quest(qid,qname,qtype) := q) {
 
-    for (<d, i, l, t> <- tenv) {
-      if (qid == i && typeOf(qtype) != t) {
-        messages += { error("Name redefined at: <qsrc>", qsrc) };
-        // TOO-DONE: messages += { info("Name initially defined at: <d>", d) };
-      }
-      if (qname == l) {
-        messages += { warning("Label already exists at: <d>", qsrc)};
-      }
+        // Check for existing definitions.
+        for (<_, ident, label, typ> <- tenv) {
+
+            // If a definition already exists and it is of a different type
+            if (qid == ident && getType(qtype) != typ) {
+                messages += { error("Name redefined", q.src) };
+            }
+            // If a definition already exists and it is of the same type
+            if (qname == label) {
+                messages += { warning("Label already exists", q.src)};
+            }
+        }
+
+        if (computedQuest(_, _, typ, expr) := q, t := getType(typ), <_,_,_,t> <- tenv) {
+            if (getType(expr, tenv, useDef) != t) {
+                messages += { error("Expression does not match the declared type.", q.src) };
+            }
+        }
     }
-
-    if (computedQuest(_, _, t_raw, expr) := q, t := typeOf(t_raw), <_,_,_,t> <- tenv) {
-      if (typeOf(expr, tenv, useDef) != t) {
-        messages += { error("Expression does not match the declared type.", qsrc) };
-      }
-    }
-  }
-
-  return messages;
+    return messages;
 }
 
 // Check operand compatibility with operators.
-// E.g. for an addition node add(lhs, rhs), 
-//   the requirement is that typeOf(lhs) == typeOf(rhs) == tint()
 set[Message] check(AExpr e, TEnv tenv, UseDef useDef) {
-  set[Message] msgs = {};
-  
-  switch (e) {
-    case ref(AId x):
-      msgs += { error("Undeclared question", x.src) | useDef[x.src] == {} };
-    default:
-      if (typeOf(e, tenv, useDef) == tunknown()) {
-        msgs += { error("Invalid expression type", e.src)};
-      }
-  }
-  
-  return msgs; 
+    set[Message] msgs = {};
+    
+    switch (e) {
+        case ref(AId x):
+            msgs += { error("Undeclared question", x.src) | useDef[x.src] == {} };
+        default:
+            if (getType(e, tenv, useDef) == tunknown()) {
+                msgs += { error("Invalid expression type", e.src)};
+            }
+    }
+    
+    return msgs; 
 }
 
-Type assertCompType(AExpr lhs, AExpr rhs, TEnv tenv, UseDef useDef) {
-  if (typeOf(lhs, tenv, useDef) == tint()
-  && typeOf(rhs, tenv, useDef) == tint()) {
-    return tbool();
-  } else {
-    return tunknown();
-  }
+Type assertComparisonType(AExpr lhs, AExpr rhs, TEnv tenv, UseDef useDef) {
+    if (getType(lhs, tenv, useDef) == tint()
+    && getType(rhs, tenv, useDef) == tint()) {
+        return tbool();
+    } else {
+        return tunknown();
+    }
 }
 
 Type assertType(AExpr lhs, AExpr rhs, Type typ, TEnv tenv, UseDef useDef) {
-  if (typeOf(lhs, tenv, useDef) == typ
-  && typeOf(rhs, tenv, useDef) == typ) {
-    return typ;
-  } else {
-    return tunknown();
-  }
+    if (getType(lhs, tenv, useDef) == typ
+    && getType(rhs, tenv, useDef) == typ) {
+        return typ;
+    } else {
+        return tunknown();
+    }
 }
 
 Type assertType(AExpr expr, Type typ, TEnv tenv, UseDef useDef) {
-  if (typeOf(expr, tenv, useDef) == typ) {
-    return typ;
-  } else {
-    return tunknown();
-  }
+    if (getType(expr, tenv, useDef) == typ) {
+        return typ;
+    } else {
+        return tunknown();
+    }
 }
 
-Type typeOf(AExpr e, TEnv tenv, UseDef useDef) {
-  println("Typeof called");
-  switch (e) {
-    case ref(id(_, src = loc u)):  
-      if (<u, loc d> <- useDef, <d, x, _, Type t> <- tenv) {
-        return t;
-      }
-    case litInt(_): return tint();
-    case litBool(_): return tbool();
-    case litStr(_): return tstr();
-    case neg(expr): return assertType(expr, tint(), tenv, useDef);
-    case not(expr): return assertType(expr, tbool(), tenv, useDef);
-    case mul(lhs, rhs): return assertType(lhs, rhs, tint(), tenv, useDef);
-    case div(lhs, rhs): return assertType(lhs, rhs, tint(), tenv, useDef);
-    case plus(lhs, rhs): return assertType(lhs, rhs, tint(), tenv, useDef);
-    case min(lhs, rhs): return assertType(lhs, rhs, tint(), tenv, useDef);
-    case and(lhs, rhs): return assertType(lhs, rhs, tbool(), tenv, useDef);
-    case or(lhs, rhs): return assertType(lhs, rhs, tbool(), tenv, useDef);
-    case lt(lhs, rhs): return assertCompType(lhs, rhs, tenv, useDef);
-    case leq(lhs, rhs): return assertCompType(lhs, rhs, tenv, useDef);
-    case gt(lhs, rhs): return assertCompType(lhs, rhs, tenv, useDef);
-    case geq(lhs, rhs): return assertCompType(lhs, rhs, tenv, useDef);
-    case equ(lhs, rhs): return (typeOf(lhs, tenv, useDef) == typeOf(rhs, tenv, useDef)) ? tbool() : tunknown();
-    case neq(lhs, rhs): return (typeOf(lhs, tenv, useDef) == typeOf(rhs, tenv, useDef)) ? tbool() : tunknown();
-  }
-  return tunknown(); 
+Type getType(AExpr e, TEnv tenv, UseDef useDef) {
+    switch (e) {
+        case ref(id(_, src = loc u)):  
+            if (<u, loc d> <- useDef, <d, _, _, Type t> <- tenv) {
+                return t;
+            }
+        case litInt(_): return tint();
+        case litBool(_): return tbool();
+        case litStr(_): return tstr();
+        case neg(expr): return assertType(expr, tint(), tenv, useDef);
+        case not(expr): return assertType(expr, tbool(), tenv, useDef);
+        case mul(lhs, rhs): return assertType(lhs, rhs, tint(), tenv, useDef);
+        case div(lhs, rhs): return assertType(lhs, rhs, tint(), tenv, useDef);
+        case plus(lhs, rhs): return assertType(lhs, rhs, tint(), tenv, useDef);
+        case min(lhs, rhs): return assertType(lhs, rhs, tint(), tenv, useDef);
+        case and(lhs, rhs): return assertType(lhs, rhs, tbool(), tenv, useDef);
+        case or(lhs, rhs): return assertType(lhs, rhs, tbool(), tenv, useDef);
+        case lt(lhs, rhs): return assertComparisonType(lhs, rhs, tenv, useDef);
+        case leq(lhs, rhs): return assertComparisonType(lhs, rhs, tenv, useDef);
+        case gt(lhs, rhs): return assertComparisonType(lhs, rhs, tenv, useDef);
+        case geq(lhs, rhs): return assertComparisonType(lhs, rhs, tenv, useDef);
+        case equ(lhs, rhs): return (getType(lhs, tenv, useDef) == getType(rhs, tenv, useDef)) ? tbool() : tunknown();
+        case neq(lhs, rhs): return (getType(lhs, tenv, useDef) == getType(rhs, tenv, useDef)) ? tbool() : tunknown();
+    }
+    return tunknown(); 
 }
 
-Type typeOf(AType t) {
-  switch (t.t) {
-    case "integer" : return tint();
-    case "boolean" : return tbool();
-    case "string" : return tstr();
-    default: return tunknown();
-  }
+Type getType(AType t) {
+    switch (t.t) {
+        case "integer" : return tint();
+        case "boolean" : return tbool();
+        case "string" : return tstr();
+        default: return tunknown();
+    }
 }
-
-/* 
- * Pattern-based dispatch style:
- * 
- * Type typeOf(ref(id(_, src = loc u)), TEnv tenv, UseDef useDef) = t
- *   when <u, loc d> <- useDef, <d, x, _, Type t> <- tenv
- *
- * ... etc.
- * 
- * default Type typeOf(AExpr _, TEnv _, UseDef _) = tunknown();
- *
- */
- 
  
 

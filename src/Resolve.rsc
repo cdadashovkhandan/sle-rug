@@ -7,15 +7,16 @@ import AST;
  */ 
 
 
-// modeling declaring occurrences of names
+// Modeling declaring occurrences of names
 alias Def = rel[str name, loc def];
 
-// modeling use occurrences of names
+// Modeling use occurrences of names
 alias Use = rel[loc use, str name];
 
+// Relation def to use
 alias UseDef = rel[loc use, loc def];
 
-// the reference graph
+// The reference graph
 alias RefGraph = tuple[
   Use uses, 
   Def defs, 
@@ -25,22 +26,29 @@ alias RefGraph = tuple[
 RefGraph resolve(AForm f) = <us, ds, us o ds>
   when Use us := uses(f), Def ds := defs(f);
 
+// Find all uses in the source
 Use uses(AForm f) {
   result = {};
+
+  // Only expressions can use identifiers
   for (/AExpr e := f) {
     result += get_use(e);
   }
   return result;
 }
 
+// find all definitions
 Def defs(AForm f) {
   result = {};
+
+  // Only questions can define identifiers
   for (/AQuestion q := f) {
     result += get_def(q);
   }
   return result;
 }
 
+// Fetch the definition from a question
 Def get_def(parent) {
   result = {};
   for (/q:computedQuest(_, id, _, _) := parent) {
@@ -52,6 +60,7 @@ Def get_def(parent) {
   return result;
 }
 
+// Fetch all uses from an expression
 Use get_use(AExpr parent) {
   result = {};
   for (/use:ref(id) := parent) {
@@ -59,10 +68,3 @@ Use get_use(AExpr parent) {
   }
   return result;
 }
-
-// (Uses, Id) o (Id, Def) = (Uses, Def)
-// 
-// Uses := Exprs
-// Def := Questions
-// 
-// Q: How do we find things recursively? 

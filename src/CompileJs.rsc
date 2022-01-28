@@ -6,11 +6,8 @@ import IO;
 import List; //TODO: REMOVE LATER
 import String;
 
-// NOTE: THIS CAN BE REMOVED
-//  HTML5Node htmlQuestion(AQuestion q, bool computed) {
-//    return input(type("text"), id("<q.\type>"), name("<q.label>"), class("ql-enabled"))
-
-
+// Simplifies a given location so that 
+// it can be used as a valid HTML id.
 str cleanLoc(loc src) {
     str inp = "<src>";
     inp = replaceAll(inp, "/", "");
@@ -76,7 +73,6 @@ str quest2js(AQuestion qu, AForm fo) {
                     '   }
                     '});\n";
             // build js code for every question inside the if AND the else
-            // I don't think their location matters anyway
             for (AQuestion iq <- iqs + eqs) { // concat the two lists
                 output += "\n" + quest2js(iq, fo) + ";\n";
             }
@@ -91,25 +87,25 @@ str expr2js(AExpr e, AForm f) {
         case ref(id(name, src = loc u)): {
             AType ty = getType(name, f);
             str accessor = typeAccessor(ty);
-            return "$(\'#<name>\')[0].<accessor>";
-        }
+            return "($(\'#<name>\')[0].<accessor>)";
+        } 
         case litInt(val): return "<val>";
         case litBool(val): return "<val>";
         case litStr(val): return "<val>";
-        case neg(expr): return "-<expr2js(expr, f)>";
-        case not(expr): return "!<expr2js(expr, f)>";
-        case mul(lhs, rhs): return "<expr2js(lhs, f)> * <expr2js(rhs, f)>";
-        case div(lhs, rhs): return "<expr2js(lhs, f)> / <expr2js(rhs, f)>";
-        case plus(lhs, rhs): return "<expr2js(lhs, f)> + <expr2js(rhs, f)>";
-        case min(lhs, rhs): return "<expr2js(lhs, f)> - <expr2js(rhs, f)>";
-        case and(lhs, rhs): return "<expr2js(lhs, f)> && <expr2js(rhs, f)>";
-        case or(lhs, rhs): return "<expr2js(lhs, f)> || <expr2js(rhs, f)>";
-        case lt(lhs, rhs): return "<expr2js(lhs, f)> \< <expr2js(rhs, f)>";
-        case leq(lhs, rhs): return "<expr2js(lhs, f)> \<= <expr2js(rhs, f)>";
-        case gt(lhs, rhs): return "<expr2js(lhs, f)> \> <expr2js(rhs, f)>";
-        case geq(lhs, rhs): return "<expr2js(lhs, f)> \>= <expr2js(rhs, f)>";
-        case equ(lhs, rhs): return "<expr2js(lhs, f)> === <expr2js(rhs, f)>";
-        case neq(lhs, rhs): return "<expr2js(lhs, f)> !== <expr2js(rhs, f)>";
+        case neg(expr): return "(-<expr2js(expr, f)>)";
+        case not(expr): return "(!<expr2js(expr, f)>)";
+        case mul(lhs, rhs): return "(<expr2js(lhs, f)> * <expr2js(rhs, f)>)";
+        case div(lhs, rhs): return "(<expr2js(lhs, f)> / <expr2js(rhs, f)>)";
+        case plus(lhs, rhs): return "(<expr2js(lhs, f)> + <expr2js(rhs, f)>)";
+        case min(lhs, rhs): return "(<expr2js(lhs, f)> - <expr2js(rhs, f)>)";
+        case and(lhs, rhs): return "(<expr2js(lhs, f)> && <expr2js(rhs, f)>)";
+        case or(lhs, rhs): return "(<expr2js(lhs, f)> || <expr2js(rhs, f)>)";
+        case lt(lhs, rhs): return "(<expr2js(lhs, f)> \< <expr2js(rhs, f)>)";
+        case leq(lhs, rhs): return "(<expr2js(lhs, f)> \<= <expr2js(rhs, f)>)";
+        case gt(lhs, rhs): return "(<expr2js(lhs, f)> \> <expr2js(rhs, f)>)";
+        case geq(lhs, rhs): return "(<expr2js(lhs, f)> \>= <expr2js(rhs, f)>)";
+        case equ(lhs, rhs): return "(<expr2js(lhs, f)> === <expr2js(rhs, f)>)";
+        case neq(lhs, rhs): return "(<expr2js(lhs, f)> !== <expr2js(rhs, f)>)";
     }
     return "";
 }
